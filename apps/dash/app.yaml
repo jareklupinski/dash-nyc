@@ -1,0 +1,123 @@
+# App configuration for dash.nyc
+# Unified NYC dashboard — news feed geocoded to the map, with links to sub-apps.
+
+app:
+  id: dash
+  title: "dash.nyc"
+  subtitle: "Good News Around New York City"
+  description: "NYC news feeds geocoded to the map, filterable by sentiment. See good news near you."
+
+  domains:
+    - dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 12
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    news: "#60a5fa"        # blue for news markers
+
+  accent: "#34d399"
+
+  crossref:
+    yelp: false
+    google: false
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 6
+
+  sources:
+    - news
+
+  # Sub-apps linked from the sidebar
+  sub_apps:
+    - id: eat
+      title: "NYC Eats"
+      url: "/eat"
+      emoji: "🍽️"
+      description: "Restaurants & bars"
+    - id: drink
+      title: "NYC Drinks"
+      url: "/drink"
+      emoji: "☕"
+      description: "Bars & coffee shops"
+    - id: food
+      title: "NYC Food"
+      url: "/food"
+      emoji: "🛒"
+      description: "Grocery stores & markets"
+    - id: news
+      title: "NYC News"
+      url: "/news"
+      emoji: "☀️"
+      description: "Good news around NYC"
+    - id: art
+      title: "NYC Art"
+      url: "/art"
+      emoji: "🎨"
+      description: "Galleries, museums & street art"
+    - id: shop
+      title: "NYC Shop"
+      url: "/shop"
+      emoji: "🛍️"
+      description: "Retail, pop-ups & markets"
+    - id: theater
+      title: "NYC Theater"
+      url: "/theater"
+      emoji: "🎭"
+      description: "Broadway & beyond"
+    - id: play
+      title: "NYC Play"
+      url: "/play"
+      emoji: "🎈"
+      description: "Playgrounds & kid fun"
+    - id: movies
+      title: "NYC Movies"
+      url: "/movies"
+      emoji: "🎬"
+      description: "Theaters & screenings"
+    - id: music
+      title: "NYC Music"
+      url: "/music"
+      emoji: "🎵"
+      description: "Live music & secret shows"
+    - id: make
+      title: "NYC Make"
+      url: "/make"
+      emoji: "🔧"
+      description: "Makerspaces & workshops"
+    - id: relax
+      title: "NYC Relax"
+      url: "/relax"
+      emoji: "🌿"
+      description: "Parks, spas & quiet spots"
+    - id: pee
+      title: "NYC Pee"
+      url: "/pee"
+      emoji: "🚻"
+      description: "Public restrooms"
+    - id: weather
+      title: "NYC Weather"
+      url: "/weather"
+      emoji: "🌧️"
+      description: "Precipitation radar & forecast"
+    - id: today
+      title: "NYC Today"
+      url: "/today"
+      emoji: "📅"
+      description: "What's happening right now"
+    - id: vibe
+      title: "NYC Vibe"
+      url: "/vibe"
+      emoji: "🔮"
+      description: "City vibes heatmap"

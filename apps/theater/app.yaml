@@ -1,0 +1,43 @@
+# App configuration for theater.dash.nyc
+# Broadway, off-broadway, off-off-broadway, and beyond.
+
+app:
+  id: theater
+  title: "NYC Theater"
+  subtitle: "Broadway & Beyond Across NYC"
+  description: "Interactive map of Broadway, off-Broadway, off-off-Broadway, and every stage in between across all five boroughs."
+
+  domains:
+    - theater.dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7580, -73.9855]   # centered on Times Square / theater district
+    zoom: 13
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    broadway:     "#fbbf24"   # gold — Broadway
+    offbroadway:  "#f87171"   # red — off-Broadway
+    offoff:       "#c084fc"   # purple — off-off-Broadway
+    fringe:       "#34d399"   # green — fringe / experimental
+
+  accent: "#fbbf24"
+
+  crossref:
+    yelp: false
+    google: false
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 24
+
+  sources:
+    - theaters

@@ -1,0 +1,42 @@
+# App configuration for drink.dash.nyc
+# Bars (SLA) and coffee/juice shops (DOHMH cuisine-filtered).
+
+app:
+  id: drink
+  title: "NYC Drinks"
+  subtitle: "Bars & Coffee Shops Across New York City"
+  description: "Interactive map of SLA-licensed bars, coffee shops, tea houses, and juice bars across all five boroughs."
+
+  domains:
+    - drink.dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 11
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    sla: "#f87171"         # bright red — bars
+    coffee: "#fbbf24"      # warm yellow — coffee/tea/juice
+
+  accent: "#d4a017"
+
+  crossref:
+    yelp: true
+    google: true
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 24
+
+  sources:
+    - sla_bars
+    - coffee

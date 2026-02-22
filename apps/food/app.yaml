@@ -1,0 +1,42 @@
+# App configuration for food.dash.nyc
+# Grocery stores and farmers markets only.
+
+app:
+  id: food
+  title: "NYC Food"
+  subtitle: "Grocery Stores & Markets Across New York City"
+  description: "Interactive map of NYS-licensed grocery stores, bodegas, supermarkets, and farmers markets across all five boroughs."
+
+  domains:
+    - food.dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 11
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    greenmarket: "#fbbf24" # warm yellow
+    grocery: "#fb923c"     # bright orange
+
+  accent: "#d4a017"
+
+  crossref:
+    yelp: false
+    google: false
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 24
+
+  sources:
+    - grocery
+    - greenmarket

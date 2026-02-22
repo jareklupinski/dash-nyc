@@ -1,0 +1,43 @@
+# App configuration for shop.dash.nyc
+# Malls, retail stores, popups, push carts.
+
+app:
+  id: shop
+  title: "NYC Shop"
+  subtitle: "Retail, Pop-Ups & Markets Across NYC"
+  description: "Interactive map of malls, retail stores, pop-up shops, and push carts across all five boroughs."
+
+  domains:
+    - shop.dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 12
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    retail:   "#60a5fa"   # blue — retail stores
+    popup:    "#fbbf24"   # yellow — pop-ups
+    pushcart: "#34d399"   # green — push carts
+    mall:     "#c084fc"   # purple — malls
+
+  accent: "#60a5fa"
+
+  crossref:
+    yelp: false
+    google: false
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 24
+
+  sources:
+    - shops

@@ -1,0 +1,46 @@
+# App configuration for today.dash.nyc
+# Aggregator: anything from other apps that is timed and happening today.
+
+app:
+  id: today
+  title: "NYC Today"
+  subtitle: "What's Happening in NYC Right Now"
+  description: "Aggregated map of timed events from all in.nyc apps — shows what's happening today across all five boroughs."
+
+  domains:
+    - today.dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 12
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    art:     "#c084fc"
+    music:   "#f87171"
+    theater: "#fbbf24"
+    movies:  "#60a5fa"
+    play:    "#34d399"
+    shop:    "#fb923c"
+
+  accent: "#fbbf24"
+
+  crossref:
+    yelp: false
+    google: false
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 1   # refreshes frequently to stay current
+
+  sources:
+    - news
+    - greenmarket

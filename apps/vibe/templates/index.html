@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="origin">
+  <title>NYC Vibe &mdash; City Vibes Heatmap</title>
+  <meta name="description" content="Tunable heatmap overlay of urban activity across all five boroughs of NYC.">
+  <meta name="author" content="Jarek Lupinski">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="tuicss.min.css">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="NYC Vibe">
+  <meta property="og:description" content="Tunable heatmap of city vibes across all five boroughs.">
+  <meta property="og:url" content="https://vibe.dash.nyc">
+  <meta property="og:site_name" content="NYC Vibe">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="NYC Vibe">
+  <meta name="twitter:description" content="Tunable heatmap of city vibes across all five boroughs.">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin>
+  <link rel="stylesheet" href="style.css?v={{ css_hash }}">
+  <style>
+    :root { --accent: #c084fc; }
+    .home-link { color: #a8a8a8; line-height: 0; flex-shrink: 0; }
+    .home-link:hover { color: #c084fc; }
+
+    /* Category slider section */
+    .cat-section { padding: 4px 8px; }
+    .cat-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
+    }
+    .cat-header .section-title {
+      font-family: monospace; font-size: 11px; color: #737373;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .cat-toggle-btns { display: flex; gap: 4px; }
+    .cat-toggle-btns button {
+      font-family: monospace; font-size: 10px; padding: 1px 6px;
+      background: #111; border: 1px solid #333; color: #737373; cursor: pointer;
+    }
+    .cat-toggle-btns button:hover { color: var(--accent); border-color: var(--accent); }
+
+    .cat-row {
+      display: grid; grid-template-columns: 3ch 5ch 1fr 3.5ch;
+      gap: 4px; align-items: center;
+      font-family: monospace; font-size: 11px; line-height: 2; color: #a8a8a8;
+    }
+    .cat-emoji { text-align: center; font-size: 13px; }
+    .cat-label { color: #d4d4d4; white-space: nowrap; overflow: hidden; }
+    .cat-val { color: #525252; text-align: right; font-size: 10px; }
+
+    /* Slider styling for dark theme */
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none; width: 100%; height: 3px;
+      background: #333; border-radius: 2px; outline: none; margin: 0;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%;
+      background: var(--accent); cursor: pointer; border: none;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--accent); cursor: pointer; border: none;
+    }
+
+    /* Tuning section */
+    .tune-section { padding: 4px 8px; }
+    .tune-section .section-title {
+      font-family: monospace; font-size: 11px; color: #737373;
+      text-transform: uppercase; letter-spacing: 1px;
+      display: block; margin-bottom: 6px;
+    }
+    .tune-row {
+      display: grid; grid-template-columns: 7ch 1fr 3.5ch;
+      gap: 4px; align-items: center;
+      font-family: monospace; font-size: 11px; line-height: 2; color: #a8a8a8;
+    }
+    .tune-label { color: #737373; }
+    .tune-val { color: #525252; text-align: right; font-size: 10px; }
+
+    /* Stats + info row */
+    .stats-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; padding: 4px 8px;
+      font-family: monospace; font-size: 11px; color: #525252;
+    }
+    .stats-count { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<div id="top-bar">
+  <a href="/" class="home-link" title="in.nyc"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></a>
+  <div class="search-wrap" id="topbar-search">
+    <input type="text" id="search-input-mobile" placeholder="Filter vibes...">
+    <button id="search-clear-mobile" type="button" aria-label="Clear" class="search-clear-btn"></button>
+    <button type="button" aria-label="Dismiss" class="search-dismiss-mobile" onclick="this.parentElement.querySelector('input').blur()">&#8855;</button>
+    <button id="apply-btn-mobile" type="button" aria-label="Search" class="apply-btn-style"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><path d="M15.5 15.5L21 21"/></svg></button>
+  </div>
+</div>
+
+<div id="sidebar">
+  <div class="search-wrap">
+    <a href="/" class="home-link" title="in.nyc"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></a>
+    <input type="text" id="search-input" placeholder="Filter vibes...">
+    <button id="search-clear" type="button" aria-label="Clear"></button>
+    <button type="button" aria-label="Dismiss" class="search-dismiss" onclick="this.parentElement.querySelector('input').blur()">&#8855;</button>
+    <button id="apply-btn" type="button" aria-label="Search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><path d="M15.5 15.5L21 21"/></svg></button>
+  </div>
+  <div class="tui-divider"></div>
+
+  <!-- Category weight sliders -->
+  <div class="cat-section">
+    <div class="cat-header">
+      <span class="section-title">Categories</span>
+      <div class="cat-toggle-btns">
+        <button id="btn-all" title="All max">ALL</button>
+        <button id="btn-none" title="All off">NONE</button>
+      </div>
+    </div>
+    <div class="cat-row"><span class="cat-emoji">🍽️</span><span class="cat-label">Eat</span><input type="range" min="0" max="100" value="100" data-cat="eat"><span class="cat-val" data-cat-val="eat">100</span></div>
+    <div class="cat-row"><span class="cat-emoji">☕</span><span class="cat-label">Drink</span><input type="range" min="0" max="100" value="100" data-cat="drink"><span class="cat-val" data-cat-val="drink">100</span></div>
+    <div class="cat-row"><span class="cat-emoji">🛒</span><span class="cat-label">Food</span><input type="range" min="0" max="100" value="100" data-cat="food"><span class="cat-val" data-cat-val="food">100</span></div>
+    <div class="cat-row"><span class="cat-emoji">☀️</span><span class="cat-label">News</span><input type="range" min="0" max="100" value="100" data-cat="news"><span class="cat-val" data-cat-val="news">100</span></div>
+    <div class="cat-row"><span class="cat-emoji">🎨</span><span class="cat-label">Art</span><input type="range" min="0" max="100" value="100" data-cat="art"><span class="cat-val" data-cat-val="art">100</span></div>
+    <div class="cat-row"><span class="cat-emoji">🛍️</span><span class="cat-label">Shop</span><input type="range" min="0" max="100" value="100" data-cat="shop"><span class="cat-val" data-cat-val="shop">100</span></div>
+    <div class="cat-row"><span class="cat-emoji">🎈</span><span class="cat-label">Play</span><input type="range" min="0" max="100" value="100" data-cat="play"><span class="cat-val" data-cat-val="play">100</span></div>
+    <div class="cat-row"><span class="cat-emoji">🌿</span><span class="cat-label">Relax</span><input type="range" min="0" max="100" value="100" data-cat="relax"><span class="cat-val" data-cat-val="relax">100</span></div>
+    <div class="cat-row"><span class="cat-emoji">🚻</span><span class="cat-label">Pee</span><input type="range" min="0" max="100" value="100" data-cat="pee"><span class="cat-val" data-cat-val="pee">100</span></div>
+    <div class="cat-row"><span class="cat-emoji">🎭</span><span class="cat-label">Theater</span><input type="range" min="0" max="100" value="100" data-cat="theater"><span class="cat-val" data-cat-val="theater">100</span></div>
+    <div class="cat-row"><span class="cat-emoji">🎬</span><span class="cat-label">Movies</span><input type="range" min="0" max="100" value="100" data-cat="movies"><span class="cat-val" data-cat-val="movies">100</span></div>
+    <div class="cat-row"><span class="cat-emoji">🎵</span><span class="cat-label">Music</span><input type="range" min="0" max="100" value="100" data-cat="music"><span class="cat-val" data-cat-val="music">100</span></div>
+    <div class="cat-row"><span class="cat-emoji">🔧</span><span class="cat-label">Make</span><input type="range" min="0" max="100" value="100" data-cat="make"><span class="cat-val" data-cat-val="make">100</span></div>
+    <div class="cat-row"><span class="cat-emoji">🌧️</span><span class="cat-label">Weather</span><input type="range" min="0" max="100" value="100" data-cat="weather"><span class="cat-val" data-cat-val="weather">100</span></div>
+  </div>
+  <div class="tui-divider"></div>
+
+  <!-- Heatmap tuning controls -->
+  <div class="tune-section">
+    <span class="section-title">Tuning</span>
+    <div class="tune-row"><span class="tune-label">Radius</span><input type="range" min="5" max="50" value="25" id="heat-radius"><span class="tune-val" id="radius-val">25</span></div>
+    <div class="tune-row"><span class="tune-label">Blur</span><input type="range" min="1" max="50" value="15" id="heat-blur"><span class="tune-val" id="blur-val">15</span></div>
+    <div class="tune-row"><span class="tune-label">Opacity</span><input type="range" min="10" max="100" value="65" id="heat-opacity"><span class="tune-val" id="opacity-val">65</span></div>
+  </div>
+  <div class="tui-divider"></div>
+
+  <!-- Stats + sources info -->
+  <div class="stats-row">
+    <button id="sources-info-btn" type="button" class="info-btn" title="Data sources">&#9432;</button>
+    <span><span class="stats-count" id="point-count">0</span> datapoints</span>
+  </div>
+
+  <div class="sidebar-updated"><a href="https://github.com/jareklupinski/dash-nyc" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">{{ build_sha[:8] }} ༼ つ ◕_◕ ༽つ {{ build_time[:10] }}</a></div>
+</div>
+
+<!-- Sources Modal -->
+<div id="sources-modal" class="modal-overlay" hidden>
+  <div class="tui-window">
+    <fieldset class="tui-fieldset">
+      <legend>Sources</legend>
+      <button class="modal-close" data-modal="sources-modal">&times;</button>
+      <p class="modal-intro">{{ "{:,}".format(venue_count) }} venues from {{ sources | length }} public data source{{ 's' if sources | length != 1 }}.</p>
+      <table class="tui-table hovered" style="width:100%">
+        <thead><tr><th>Source</th><th>Venues</th><th>Refreshed</th></tr></thead>
+        <tbody>
+          {% for s in sources %}
+          <tr>
+            <td>{% if s.url %}<a href="{{ s.url }}" target="_blank" rel="noopener">{{ s.description | e }}</a>{% else %}{{ s.description | e }}{% endif %}</td>
+            <td>{{ "{:,}".format(s.count) }}</td>
+            <td>{{ s.last_refreshed[:10] if s.last_refreshed else '\u2014' }}{% if s.from_cache %} <span style="color:#a8a800" title="Served from cache">&#x26A1;</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="modal-heading">Categories</div>
+      <ul class="xr-legend">
+        <li>🍽️ <strong>Eat</strong> &mdash; Restaurants, diners &amp; food establishments.</li>
+        <li>☕ <strong>Drink</strong> &mdash; Bars, coffee shops &amp; licensed lounges.</li>
+        <li>🛒 <strong>Food</strong> &mdash; Grocery stores, greenmarkets &amp; corner delis.</li>
+        <li>☀️ <strong>News</strong> &mdash; Geocoded news events &amp; happenings.</li>
+        <li>🎨 <strong>Art</strong> &mdash; Museums, galleries &amp; cultural venues.</li>
+        <li>🛍️ <strong>Shop</strong> &mdash; Retail stores, pawnbrokers &amp; vendors.</li>
+        <li>🎈 <strong>Play</strong> &mdash; Playgrounds &amp; activity centers.</li>
+        <li>🌿 <strong>Relax</strong> &mdash; Parks, gardens &amp; green spaces.</li>
+        <li>🚻 <strong>Pee</strong> &mdash; Public restroom facilities.</li>
+        <li>🎭 <strong>Theater</strong> &mdash; Theater, dance &amp; performing arts.</li>
+        <li>🎬 <strong>Movies</strong> &mdash; Film, video &amp; cinema organizations.</li>
+        <li>🎵 <strong>Music</strong> &mdash; Music organizations &amp; ensembles.</li>
+        <li>🔧 <strong>Make</strong> &mdash; Libraries, workshops &amp; maker spaces.</li>
+        <li>🌧️ <strong>Weather</strong> &mdash; NWS observation stations.</li>
+      </ul>
+      <p class="modal-attrib">Built {{ build_time }} &middot; <a href="https://github.com/jareklupinski/dash-nyc" target="_blank" rel="noopener">source</a> &middot; <a href="/">in.nyc</a></p>
+    </fieldset>
+  </div>
+</div>
+
+<div id="map-wrap">
+  <div id="map"></div>
+  <div id="map-loading"><div class="spinner"></div></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="tuicss.min.js"></script>
+<script src="heatpoints.js?v={{ hp_hash }}"></script>
+<script src="fairy.js"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  /* Redirect subdomain to path: vibe.dash.nyc -> dash.nyc/vibe */
+  if (location.hostname !== 'dash.nyc' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    location.replace('https://dash.nyc/vibe/' + location.hash);
+    return;
+  }
+
+  /* ── Map ── */
+  var map = L.map("map", { preferCanvas: true, center: [40.7128, -74.006], zoom: 12, maxZoom: 19, zoomControl: false });
+  L.control.zoom({ position: 'bottomleft' }).addTo(map);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    maxZoom: 19
+  }).addTo(map);
+
+  document.getElementById('map').addEventListener('pointerdown', function(e) { fairySprite.track(e); });
+
+  /* ── Categorize heatpoints ── */
+  /* HEAT_CATS = ['eat','drink','food','news','art','shop','play','relax','pee'] */
+  /* HEAT_POINTS = [[lat, lng, catIdx], ...] */
+  var CATS = HEAT_CATS;
+  var catPoints = {};
+  for (var ci = 0; ci < CATS.length; ci++) catPoints[CATS[ci]] = [];
+
+  for (var i = 0; i < HEAT_POINTS.length; i++) {
+    var p = HEAT_POINTS[i];
+    var cat = CATS[p[2]];
+    if (cat) catPoints[cat].push(p);
+  }
+
+  /* ── Category weights (0–1) ── */
+  var catWeights = {};
+  for (var wi = 0; wi < CATS.length; wi++) catWeights[CATS[wi]] = 1.0;
+
+  /* ── Heatmap gradient: purple → pink → orange → gold ── */
+  var GRAD = {
+    0.0:  'rgba(0,0,0,0)',
+    0.1:  '#1e1b4b',
+    0.25: '#5b21b6',
+    0.4:  '#7c3aed',
+    0.55: '#c084fc',
+    0.7:  '#ec4899',
+    0.85: '#f97316',
+    1.0:  '#fbbf24'
+  };
+
+  var heatLayer = L.heatLayer([], {
+    radius: 25, blur: 15, maxZoom: 17, max: 1.0,
+    gradient: GRAD, minOpacity: 0
+  }).addTo(map);
+
+  /* ── Build heat data ── */
+  function buildHeatData() {
+    var pts = [];
+    for (var ci = 0; ci < CATS.length; ci++) {
+      var cat = CATS[ci], w = catWeights[cat];
+      if (w <= 0) continue;
+      var cp = catPoints[cat];
+      for (var pi = 0; pi < cp.length; pi++) {
+        pts.push([cp[pi][0], cp[pi][1], w]);
+      }
+    }
+    return pts;
+  }
+
+  var countEl = document.getElementById("point-count");
+  var opaSlider = document.getElementById("heat-opacity");
+
+  function applyOpacity() {
+    var o = parseInt(opaSlider.value) / 100;
+    if (heatLayer._canvas) heatLayer._canvas.style.opacity = o;
+  }
+
+  function updateHeat() {
+    var pts = buildHeatData();
+    countEl.textContent = pts.length.toLocaleString();
+    heatLayer.setLatLngs(pts);
+    var r = parseInt(document.getElementById("heat-radius").value);
+    var b = parseInt(document.getElementById("heat-blur").value);
+    heatLayer.setOptions({ radius: r, blur: b });
+    setTimeout(applyOpacity, 0);
+  }
+
+  map.on("moveend", function () { setTimeout(applyOpacity, 50); });
+
+  /* Initial render */
+  updateHeat();
+
+  /* ── Debounce ── */
+  var _dt;
+  function scheduleUpdate() { clearTimeout(_dt); _dt = setTimeout(updateHeat, 30); }
+
+  /* ── Category sliders ── */
+  document.querySelectorAll("input[data-cat]").forEach(function (sl) {
+    var cat = sl.dataset.cat;
+    var valEl = document.querySelector("[data-cat-val='" + cat + "']");
+    sl.addEventListener("input", function () {
+      var pct = parseInt(sl.value);
+      catWeights[cat] = pct / 100;
+      valEl.textContent = pct;
+      scheduleUpdate();
+    });
+  });
+
+  document.getElementById("btn-all").addEventListener("click", function () {
+    document.querySelectorAll("input[data-cat]").forEach(function (sl) {
+      sl.value = 100;
+      catWeights[sl.dataset.cat] = 1.0;
+      document.querySelector("[data-cat-val='" + sl.dataset.cat + "']").textContent = "100";
+    });
+    updateHeat();
+  });
+
+  document.getElementById("btn-none").addEventListener("click", function () {
+    document.querySelectorAll("input[data-cat]").forEach(function (sl) {
+      sl.value = 0;
+      catWeights[sl.dataset.cat] = 0;
+      document.querySelector("[data-cat-val='" + sl.dataset.cat + "']").textContent = "0";
+    });
+    updateHeat();
+  });
+
+  /* ── Tuning sliders ── */
+  var radSlider = document.getElementById("heat-radius");
+  var blurSlider = document.getElementById("heat-blur");
+  var radVal = document.getElementById("radius-val");
+  var blurVal = document.getElementById("blur-val");
+  var opaVal = document.getElementById("opacity-val");
+
+  radSlider.addEventListener("input", function () { radVal.textContent = radSlider.value; scheduleUpdate(); });
+  blurSlider.addEventListener("input", function () { blurVal.textContent = blurSlider.value; scheduleUpdate(); });
+  opaSlider.addEventListener("input", function () { opaVal.textContent = opaSlider.value; scheduleUpdate(); });
+
+  /* ── Search ── */
+  var sI = document.getElementById("search-input");
+  var aB = document.getElementById("apply-btn");
+  var cB = document.getElementById("search-clear");
+  var sIM = document.getElementById("search-input-mobile");
+  var aBM = document.getElementById("apply-btn-mobile");
+  var cBM = document.getElementById("search-clear-mobile");
+
+  function syncInputs(from, to, cb) { to.value = from.value; cb.style.display = from.value ? "inline-flex" : "none"; }
+  sI.addEventListener("input", function () { syncInputs(sI, sIM, cB); });
+  sIM.addEventListener("input", function () { syncInputs(sIM, sI, cBM); });
+  aB.addEventListener("click", updateHeat);
+  aBM.addEventListener("click", updateHeat);
+  function clearAll() { sI.value = sIM.value = ""; cB.style.display = "none"; cBM.style.display = "none"; updateHeat(); }
+  cB.addEventListener("click", clearAll);
+  cBM.addEventListener("click", clearAll);
+  sI.addEventListener("keyup", function (e) { if (e.key === "Enter") updateHeat(); });
+  sIM.addEventListener("keyup", function (e) { if (e.key === "Enter") { updateHeat(); sIM.blur(); } });
+  sI.addEventListener("input", function () { cB.style.display = sI.value ? "inline-flex" : "none"; });
+
+  /* ── Modals ── */
+  function openModal(id) { document.getElementById(id).hidden = false; }
+  function closeModal(id) { document.getElementById(id).hidden = true; }
+  document.querySelectorAll(".modal-close").forEach(function (btn) { btn.addEventListener("click", function () { closeModal(btn.dataset.modal); }); });
+  document.querySelectorAll(".modal-overlay").forEach(function (el) { el.addEventListener("click", function (e) { if (e.target === el) el.hidden = true; }); });
+
+  var sBtn = document.getElementById("sources-info-btn");
+  if (sBtn) sBtn.addEventListener("click", function () { openModal("sources-modal"); });
+
+  window.addEventListener("resize", function () { map.invalidateSize(); });
+
+  /* ── Hide loading spinner ── */
+  document.getElementById("map-loading").classList.remove("active");
+})();
+</script>
+</body>
+</html>

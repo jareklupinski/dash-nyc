@@ -1,0 +1,42 @@
+# App configuration for play.dash.nyc
+# Playgrounds, activity centers, fun kid-focused events.
+
+app:
+  id: play
+  title: "NYC Play"
+  subtitle: "Playgrounds, Activities & Kid-Friendly Fun"
+  description: "Interactive map of playgrounds, activity centers, and kid-focused events across all five boroughs."
+
+  domains:
+    - play.dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 12
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    playground: "#34d399"   # green — playgrounds
+    activity:   "#60a5fa"   # blue — activity centers
+    event:      "#fbbf24"   # yellow — kid events
+
+  accent: "#34d399"
+
+  crossref:
+    yelp: false
+    google: false
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 24
+
+  sources:
+    - playgrounds

@@ -1,0 +1,41 @@
+# App configuration for pee.dash.nyc
+# Public restrooms, private restrooms with restrictions.
+
+app:
+  id: pee
+  title: "NYC Pee"
+  subtitle: "Public & Accessible Restrooms Across NYC"
+  description: "Interactive map of public restrooms and private restrooms with access restrictions across all five boroughs."
+
+  domains:
+    - pee.dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 12
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    public:     "#34d399"   # green — public restrooms
+    restricted: "#fbbf24"   # yellow — private with restrictions
+
+  accent: "#34d399"
+
+  crossref:
+    yelp: false
+    google: false
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 168   # weekly — locations don't change often
+
+  sources:
+    - restrooms

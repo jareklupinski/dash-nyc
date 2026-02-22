@@ -1,0 +1,15 @@
+[Unit]
+Description=dash.nyc daily data refresh
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User={{BUILD_USER}}
+Environment=DASH_NYC_REPO={{BUILD_REPO}}
+Environment=YELP_API_KEY={{YELP_API_KEY}}
+ExecStart={{BUILD_REPO}}/cron/dash-nyc-refresh
+StandardOutput=append:{{BUILD_REPO}}/refresh.log
+StandardError=append:{{BUILD_REPO}}/refresh.log
+NoNewPrivileges=true
+PrivateTmp=true

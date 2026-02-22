@@ -1,0 +1,53 @@
+# App configuration for eat.dash.nyc
+# Restaurants (DOHMH), bars (SLA), and park eateries (DPR).
+
+app:
+  id: eat
+  title: "NYC Eats"
+  subtitle: "Every Restaurant & Bar in New York City"
+  description: "Interactive map of DOH-licensed restaurants, SLA-licensed bars, and park eateries across all five boroughs."
+
+  domains:
+    - eat.dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 11
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    dohmh: "#60a5fa"       # bright blue
+    both: "#c084fc"        # bright purple
+    sla: "#f87171"         # bright red
+    dpr: "#34d399"         # bright green
+
+  accent: "#d4a017"
+
+  crossref:
+    yelp: true
+    google: true
+    opentable: true
+
+  diet:
+    enabled: true
+    sources:
+      - hms_halal
+      - knm_kosher
+      - dohmh_cuisine
+      - yelp_categories
+
+  merge:
+    pairs:
+      - [dohmh, sla]
+    geo_radius_m: 30
+    name_threshold: 0.35
+
+  refresh_hours: 24
+
+  sources:
+    - dohmh
+    - sla
+    - dpr

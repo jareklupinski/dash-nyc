@@ -1,0 +1,43 @@
+# App configuration for music.dash.nyc
+# Concerts, weekly sets, bar nights, residencies, secret shows.
+
+app:
+  id: music
+  title: "NYC Music"
+  subtitle: "Live Music, Concerts & Secret Shows"
+  description: "Interactive map of concerts, ongoing weekly sets, residencies, and secret shows across all five boroughs."
+
+  domains:
+    - music.dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 12
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    concert:    "#f87171"   # red — concerts
+    weekly:     "#60a5fa"   # blue — weekly sets / bar nights
+    residency:  "#fbbf24"   # yellow — residencies
+    secret:     "#c084fc"   # purple — secret shows
+
+  accent: "#f87171"
+
+  crossref:
+    yelp: false
+    google: false
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 12
+
+  sources:
+    - musicians

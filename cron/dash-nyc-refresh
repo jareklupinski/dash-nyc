@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# dash-nyc-refresh — daily rebuild + cross-reference of all dash.nyc apps
+#
+# Runs daily at 3:00 AM ET on the build server via systemd timer.
+# Builds data locally, then rsyncs static output to the web server.
+
+set -euo pipefail
+
+# --- Configuration ---
+REPO_DIR="${DASH_NYC_REPO:-$HOME/dash-nyc}"
+VENV="$REPO_DIR/.venv"
+
+# --- Helpers ---
+log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
+
+# --- Main ---
+if [ -z "${INVOCATION_ID:-}" ]; then
+    exec >> "$REPO_DIR/refresh.log" 2>&1
+fi
+
+log "=== Starting NYC Map refresh ==="
+
+cd "$REPO_DIR"
+
+# Ensure venv & deps
+if [ ! -d "$VENV" ]; then
+    log "Creating virtualenv…"
+    python3 -m venv "$VENV"
+fi
+"$VENV/bin/pip" install -q --upgrade pip
+"$VENV/bin/pip" install -q -r requirements.txt
+
+# Build all apps (fresh fetch, no cache)
+log "Building all apps…"
+"$VENV/bin/python" build.py --all -v 2>&1
+
+# Cross-reference (Yelp only; Google pre-filled locally)
+# Uses shared DB at data/crossref.db
+if [ -n "${YELP_API_KEY:-}" ]; then
+    log "Running cross-reference checks…"
+    XREF_START=$(date +%s)
+    "$VENV/bin/python" -m lib.crossref \
+        --google-limit 0 \
+        --opentable-limit 0 \
+        2>&1
+    XREF_END=$(date +%s)
+    log "Cross-reference completed in $(( XREF_END - XREF_START ))s"
+
+    # Rebuild apps that use cross-ref data
+    log "Rebuilding apps with cross-ref data…"
+    "$VENV/bin/python" build.py --all --cache -v 2>&1
+else
+    log "YELP_API_KEY not set — skipping cross-reference"
+fi
+
+# Deploy all built apps
+log "Deploying all apps…"
+"$VENV/bin/python" deploy.py --all -v 2>&1
+
+log "=== Refresh complete ==="
+echo ""

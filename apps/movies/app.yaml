@@ -1,0 +1,42 @@
+# App configuration for movies.dash.nyc
+# Movie theaters, indie theaters, popup projection events.
+
+app:
+  id: movies
+  title: "NYC Movies"
+  subtitle: "Theaters & Screenings Across NYC"
+  description: "Interactive map of movie theaters, indie cinemas, and pop-up screenings across all five boroughs."
+
+  domains:
+    - movies.dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 12
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    chain:  "#60a5fa"   # blue — chain theaters
+    indie:  "#fbbf24"   # yellow — indie theaters
+    popup:  "#f87171"   # red — pop-up screenings
+
+  accent: "#f87171"
+
+  crossref:
+    yelp: false
+    google: false
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 24
+
+  sources:
+    - cinemas

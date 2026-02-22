@@ -1,0 +1,42 @@
+# App configuration for weather.dash.nyc
+# Precipitation radar with rolling forecast.
+
+app:
+  id: weather
+  title: "NYC Weather"
+  subtitle: "Live Precipitation Radar & Forecast"
+  description: "Live precipitation radar with rolling forecast overlaid on an interactive map of New York City."
+
+  domains:
+    - weather.dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 11
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    rain: "#60a5fa"   # blue
+    snow: "#e5e5e5"   # white
+    mix:  "#c084fc"   # purple
+
+  accent: "#60a5fa"
+
+  crossref:
+    yelp: false
+    google: false
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 1   # weather updates frequently
+
+  sources:
+    - stations

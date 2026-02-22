@@ -1,0 +1,66 @@
+# App configuration for vibe.dash.nyc
+# Tunable heatmap of urban activity — aggregated from all dash.nyc apps.
+
+app:
+  id: vibe
+  title: "NYC Vibe"
+  subtitle: "City Vibes Heatmap"
+  description: "Tunable heatmap overlay of urban activity across NYC — restaurants, nightlife, culture, parks, and more."
+  heatmap_only: true
+
+  domains:
+    - vibe.dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 12
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    eat:   "#ef4444"
+    drink: "#f97316"
+    food:  "#eab308"
+    news:  "#60a5fa"
+    art:   "#c084fc"
+    shop:  "#fb923c"
+    play:  "#34d399"
+    relax: "#22d3ee"
+    pee:   "#a78bfa"
+
+  accent: "#c084fc"
+
+  crossref:
+    yelp: false
+    google: false
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 24
+
+  sources:
+    - dohmh
+    - sla
+    - sla_bars
+    - coffee
+    - grocery
+    - greenmarket
+    - dpr
+    - news
+    - playgrounds
+    - parks
+    - cultural
+    - shops
+    - restrooms
+    - theaters
+    - cinemas
+    - musicians
+    - workshops
+    - stations

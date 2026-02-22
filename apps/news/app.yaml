@@ -1,0 +1,41 @@
+# App configuration for dash.nyc/news
+# NYC good-news feed geocoded to the map, filterable by sentiment.
+
+app:
+  id: news
+  title: "NYC News"
+  subtitle: "Good News Around New York City"
+  description: "NYC news feeds geocoded to the map, filterable by sentiment. See good news near you."
+
+  # Served at dash.nyc/news — no separate domain needed
+  # (build.py copies dist/news into dist/dash/news/ for path-based routing)
+  domains: []
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 12
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    news: "#60a5fa"
+
+  accent: "#34d399"
+
+  crossref:
+    yelp: false
+    google: false
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 6
+
+  sources:
+    - news

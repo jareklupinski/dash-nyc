@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="origin">
+  <title>NYC News — dash.nyc</title>
+  <meta name="description" content="NYC news feeds geocoded to the map, filterable by sentiment. See good news near you.">
+  <meta name="author" content="Jarek Lupinski">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="tuicss.min.css">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="NYC News — dash.nyc">
+  <meta property="og:description" content="NYC news feeds geocoded to the map, filterable by sentiment.">
+  <meta property="og:url" content="https://dash.nyc/news">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin>
+  <link rel="stylesheet" href="style.css?v={{ css_hash }}">
+  <style>
+    :root { --accent: #34d399; }
+
+    /* ── Venue info panel (terminal style) ── */
+    #venue-info { display: none; }
+    #venue-info.active { display: block; }
+    .vi-actions {
+      display: flex; gap: 4px; margin-top: 4px;
+    }
+    .vi-actions .vi-back, .vi-actions .vi-link-btn, .vi-actions .vi-share-btn {
+      flex: 1; padding: 4px 0; text-align: center; font-family: monospace; font-size: 12px;
+      cursor: pointer; border: 1px solid #555; background: #111; color: #a8a8a8;
+      text-decoration: none; display: inline-block;
+    }
+    .vi-actions .vi-back:hover, .vi-actions .vi-link-btn:hover, .vi-actions .vi-share-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .vi-term {
+      font-family: monospace; font-size: 12px; line-height: 1.5;
+      background: #0a0a0a; border: 1px solid #333; padding: 6px 8px;
+      color: #e5e5e5; overflow: hidden;
+    }
+    .vi-row { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vi-label { color: #737373; display: inline-block; width: 5ch; text-align: right; margin-right: 1ch; }
+    .vi-name { color: var(--accent); font-weight: bold; }
+    .vi-addr { color: #a3a3a3; }
+    .vi-meta { color: #60a5fa; }
+    .vi-tags { color: #34d399; }
+    .vi-src  { color: #737373; font-style: italic; }
+    .vi-link a { color: #60a5fa; text-decoration: none; }
+    .vi-link a:hover { text-decoration: underline; }
+    .vi-sentiment { }
+    .vi-sentiment.pos { color: #34d399; }
+    .vi-sentiment.neg { color: #f87171; }
+    .vi-reviews { color: #a8a800; }
+
+    /* ── Pulse ring on selected marker ── */
+    .sel-ring { pointer-events: none; }
+    .sel-ring svg { animation: pulse-in 1.4s ease-out infinite; transform-origin: center; }
+    @keyframes pulse-in {
+      0%   { transform: scale(1); opacity: 0.9; }
+      100% { transform: scale(0.3); opacity: 0; }
+    }
+
+    /* ── Mobile: hide filters when venue selected ── */
+    @media (max-width: 700px) {
+      #sidebar.venue-selected .filter-row,
+      #sidebar.venue-selected .filter-row + .tui-divider,
+      #sidebar.venue-selected .sidebar-updated { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Mobile top bar -->
+<div id="top-bar">
+  <a href="/" class="home-link" title="dash.nyc"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></a>
+  <div class="search-wrap" id="topbar-search">
+    <input type="text" id="search-input-mobile" placeholder="Search…">
+    <button id="search-clear-mobile" type="button" aria-label="Clear" class="search-clear-btn"></button>
+    <button type="button" aria-label="Dismiss" class="search-dismiss-mobile" onclick="this.parentElement.querySelector('input').blur()">⊗</button>
+    <button id="apply-btn-mobile" type="button" aria-label="Search" class="apply-btn-style"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><path d="M15.5 15.5L21 21"/></svg></button>
+  </div>
+</div>
+
+<div id="sidebar">
+  <!-- Search -->
+  <div class="search-wrap">
+    <a href="/" class="home-link" title="dash.nyc"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></a>
+    <input type="text" id="search-input" placeholder="Search news…">
+    <button id="search-clear" type="button" aria-label="Clear"></button>
+    <button type="button" aria-label="Dismiss" class="search-dismiss" onclick="this.parentElement.querySelector('input').blur()">⊗</button>
+    <button id="apply-btn" type="button" aria-label="Search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><path d="M15.5 15.5L21 21"/></svg></button>
+  </div>
+
+  <div class="tui-divider"></div>
+
+  <!-- Sources -->
+  <div class="filter-row">
+    <span class="section-title">Sources</span>
+    <button id="sources-info-btn" type="button" class="info-btn" title="Data sources">ⓘ</button>
+  </div>
+
+  <div class="tui-divider"></div>
+
+  <!-- Filters -->
+  <div class="filter-row">
+    <span class="section-title">Filters</span>
+    <label><input type="radio" name="f1" value="positive" checked> ☀ Good News</label>
+    <label><input type="radio" name="f1" value=""> All</label>
+    <label><input type="radio" name="f1" value="negative"> ☁ Bad News</label>
+  </div>
+
+  <div class="tui-divider"></div>
+
+  <!-- Venue info panel (appears on marker click) -->
+  <div id="venue-info"></div>
+
+  <div class="tui-divider"></div>
+
+  <div class="sidebar-updated"><a href="https://github.com/jareklupinski/dash-nyc" target="_blank" rel="noopener" style="color:inherit;text-decoration:none">{{ build_sha[:8] }} ༼ つ ◕_◕ ༽つ {{ build_time[:10] }}</a></div>
+</div>
+
+<!-- Sources Modal (data sources + pipeline) -->
+<div id="sources-modal" class="modal-overlay" hidden>
+  <div class="tui-window">
+    <fieldset class="tui-fieldset">
+      <legend>Sources</legend>
+      <button class="modal-close" data-modal="sources-modal">&times;</button>
+      <p class="modal-intro">{{ "{:,}".format(venue_count) }} news articles geocoded from public RSS feeds.</p>
+      <table class="tui-table hovered" style="width:100%">
+        <thead><tr><th>Source</th><th>Description</th><th>Count</th><th>Refreshed</th></tr></thead>
+        <tbody>
+          {% for s in sources %}
+          <tr>
+            <td>{{ s.name | e }}</td>
+            <td>{% if s.url %}<a href="{{ s.url }}" target="_blank" rel="noopener">{{ s.description | e }}</a>{% else %}{{ s.description | e }}{% endif %}</td>
+            <td>{{ "{:,}".format(s.count) }}</td>
+            <td>{{ s.last_refreshed[:10] if s.last_refreshed else '—' }}{% if s.from_cache %} <span style="color:#a8a800" title="Served from cache">⚡</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="modal-heading">Pipeline</div>
+      <table class="tui-table hovered" style="width:100%">
+        <thead><tr><th>Step</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Raw input</td><td>{{ "{:,}".format(merge_stats.pre_merge) }} articles</td></tr>
+          {% for s in pipeline_stats %}
+          <tr><td>{{ s.label | e }}</td><td>&minus;{{ "{:,}".format(s.removed) }} ({{ s.detail | e }})</td></tr>
+          {% endfor %}
+          <tr class="pipeline-total"><td>Final</td><td>{{ "{:,}".format(merge_stats.post_merge) }} articles</td></tr>
+        </tbody>
+      </table>
+      <p class="modal-attrib">Built {{ build_time }} · <a href="https://github.com/jareklupinski/dash-nyc" target="_blank" rel="noopener">source</a> · <a href="/">dash.nyc</a></p>
+    </fieldset>
+  </div>
+</div>
+
+<div id="map-wrap">
+  <div id="map"></div>
+  <div id="map-loading"><div class="spinner"></div></div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin></script>
+<script src="https://unpkg.com/supercluster@8.0.1/dist/supercluster.min.js"></script>
+<script src="tuicss.min.js"></script>
+<script src="venues.js?v={{ data_hash }}"></script>
+<script src="venue_info.js?v={{ vi_hash }}"></script>
+<script src="fairy.js"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ── Theme ── */
+  const ACCENT = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#34d399";
+
+  /* ── Venue color (news: green for positive, red for negative) ── */
+  function venueColor(v) {
+    return v.meta && v.meta.sentiment === "POSITIVE" ? "#34d399" : "#f87171";
+  }
+
+  /* ── Helpers ── */
+  function fmtNum(n) { return n.toLocaleString(); }
+  function esc(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+  /* ══════════════════════════════════════════════════════════════
+     MAP SETUP
+     ══════════════════════════════════════════════════════════════ */
+
+  const map = L.map("map", { preferCanvas: true, center: [40.7128, -74.006], zoom: 12, maxZoom: 19, zoomControl: false });
+  L.control.zoom({ position: 'bottomleft' }).addTo(map);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    maxZoom: 19,
+  }).addTo(map);
+
+  const SC_OPTS = { radius: 60, maxZoom: 17, minPoints: 2 };
+  let scIndex = new Supercluster(SC_OPTS);
+  const markerLayer = L.layerGroup().addTo(map);
+
+  /* ── Venue data ── */
+  const allVenuesRaw = (typeof VENUE_DATA !== "undefined" ? VENUE_DATA : []).filter(v => v.lat != null && v.lng != null);
+  for (let i = 0; i < allVenuesRaw.length; i++) allVenuesRaw[i]._vi = i;
+  let allVenues = allVenuesRaw.slice();
+  const VENUE_INFO = typeof window.VENUE_INFO !== "undefined" ? window.VENUE_INFO : [];
+  const SOURCE_META = typeof window.SOURCE_META !== "undefined" ? window.SOURCE_META : [];
+
+  const venueById = {};
+  for (let i = 0; i < allVenuesRaw.length; i++) {
+    if (allVenuesRaw[i].id) venueById[allVenuesRaw[i].id] = allVenuesRaw[i];
+  }
+
+  /* ── Venue Info Panel ── */
+  const viEl = document.getElementById("venue-info");
+  const sidebar = document.getElementById("sidebar");
+  let selectedVenue = null;
+  let selRingLayer = null;
+
+  /* ── Marker-tap fairy sprite ── */
+  document.getElementById('map').addEventListener('pointerdown', e => { fairySprite.track(e); });
+
+  function showVenueInfo(v) {
+    selectedVenue = v;
+    sidebar.classList.add("venue-selected");
+    viEl.classList.add("active");
+    viEl.innerHTML = VENUE_INFO[v._vi] || "";
+    const cb = viEl.querySelector(".vi-back");
+    if (cb) cb.addEventListener("click", hideVenueInfo);
+    updateSelRing();
+    fairySprite.fly();
+    if (v.id) history.replaceState(null, '', '#' + v.id);
+  }
+  function hideVenueInfo() {
+    selectedVenue = null;
+    sidebar.classList.remove("venue-selected");
+    viEl.classList.remove("active");
+    viEl.innerHTML = "";
+    clearSelRing();
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+  }
+
+  /* ── Pulse ring ── */
+  function makeRingSvg(r) {
+    const rMax = r + 8, sz = (rMax + 4) * 2, cr = sz / 2;
+    return `<svg width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}"><circle cx="${cr}" cy="${cr}" r="${rMax}" fill="none" stroke="${ACCENT}" stroke-width="2"/></svg>`;
+  }
+  function updateSelRing() {
+    clearSelRing();
+    if (!selectedVenue) return;
+    const mob = window.innerWidth <= 768;
+    const zoom = Math.floor(map.getZoom());
+    const r = mob ? (zoom >= 17 ? 10 : zoom >= 15 ? 9 : 8) : (zoom >= 17 ? 6 : zoom >= 15 ? 5 : 4);
+    const sz = (r + 14) * 2;
+    const icon = L.divIcon({ className: "sel-ring", html: makeRingSvg(r), iconSize: [sz, sz], iconAnchor: [sz / 2, sz / 2] });
+    selRingLayer = L.marker([selectedVenue.lat, selectedVenue.lng], { icon: icon, interactive: false, zIndexOffset: 1000 });
+    selRingLayer.addTo(map);
+  }
+  function clearSelRing() { if (selRingLayer) { map.removeLayer(selRingLayer); selRingLayer = null; } }
+
+  /* ── Rendering ── */
+  function toFeatures(venues) {
+    return venues.map((v, i) => ({ type: "Feature", geometry: { type: "Point", coordinates: [v.lng, v.lat] }, properties: { _vi: i } }));
+  }
+
+  function renderMarkers() {
+    markerLayer.clearLayers();
+    if (!allVenues.length) return;
+    const bounds = map.getBounds();
+    const zoom = Math.floor(map.getZoom());
+    const bbox = [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()];
+    const feats = scIndex.getClusters(bbox, zoom);
+
+    for (const f of feats) {
+      const [fLng, fLat] = f.geometry.coordinates;
+      if (f.properties.cluster) {
+        const count = f.properties.point_count;
+        const abbr = f.properties.point_count_abbreviated;
+        const sz = count < 100 ? 30 : count < 1000 ? 36 : 42;
+        const cid = f.properties.cluster_id;
+        const icon = L.divIcon({
+          className: "sc-cluster" + (count < 100 ? " sc-sm" : count < 1000 ? " sc-md" : " sc-lg"),
+          html: "<div>" + abbr + "</div>", iconSize: [sz, sz], iconAnchor: [sz / 2, sz / 2],
+        });
+        const cm = L.marker([fLat, fLng], { icon: icon });
+        cm.on("click", () => map.setView([fLat, fLng], scIndex.getClusterExpansionZoom(cid)));
+        markerLayer.addLayer(cm);
+      } else {
+        const v = allVenues[f.properties._vi];
+        const color = venueColor(v);
+        const mob = window.innerWidth <= 768;
+        const r = mob ? (zoom >= 17 ? 10 : zoom >= 15 ? 9 : 8) : (zoom >= 17 ? 6 : zoom >= 15 ? 5 : 4);
+        const c = L.circleMarker([fLat, fLng], { radius: r, color: color, fillColor: color, fillOpacity: 0.85, weight: 1, opacity: 0.9, bubblingMouseEvents: false });
+        c.on("click", () => showVenueInfo(v));
+        c._venue = v;
+        markerLayer.addLayer(c);
+      }
+    }
+    updateSelRing();
+  }
+
+  map.on("moveend", renderMarkers);
+  map.on("click", e => { if (!e.originalEvent._markerClicked) hideVenueInfo(); });
+  markerLayer.on("click", e => { e.originalEvent._markerClicked = true; });
+
+  /* ══════════════════════════════════════════════════════════════
+     SEARCH + FILTER
+     ══════════════════════════════════════════════════════════════ */
+
+  const sI = document.getElementById("search-input");
+  const cB = document.getElementById("search-clear");
+  const sIM = document.getElementById("search-input-mobile");
+  const cBM = document.getElementById("search-clear-mobile");
+
+  function syncSearch(from, to, cb) { to.value = from.value; cb.style.display = from.value ? "inline-flex" : "none"; }
+  sI.addEventListener("input", () => syncSearch(sI, sIM, cB));
+  sIM.addEventListener("input", () => syncSearch(sIM, sI, cBM));
+  document.getElementById("apply-btn").addEventListener("click", applyFilters);
+  document.getElementById("apply-btn-mobile").addEventListener("click", applyFilters);
+  cB.addEventListener("click", () => { sI.value = sIM.value = ""; cB.style.display = cBM.style.display = "none"; applyFilters(); });
+  cBM.addEventListener("click", () => { sI.value = sIM.value = ""; cB.style.display = cBM.style.display = "none"; applyFilters(); });
+  sI.addEventListener("keyup", e => { if (e.key === "Enter") applyFilters(); });
+  sIM.addEventListener("keyup", e => { if (e.key === "Enter") { applyFilters(); sIM.blur(); } });
+  sI.addEventListener("input", () => { cB.style.display = sI.value ? "inline-flex" : "none"; });
+
+  /* Sentiment filter change */
+  document.querySelectorAll('input[name="f1"]').forEach(r => {
+    r.addEventListener("change", applyFilters);
+  });
+
+  function applyFilters() {
+    hideVenueInfo();
+    const mapLoading = document.getElementById("map-loading");
+    mapLoading.classList.add("active");
+    requestAnimationFrame(() => { requestAnimationFrame(() => {
+      const query = (sI.value || sIM.value).trim().toLowerCase();
+      const f1El = document.querySelector('input[name="f1"]:checked');
+      const f1 = f1El ? f1El.value : "";
+
+      allVenues = allVenuesRaw.filter(v => {
+        if (f1 === "positive" && (!v.meta || v.meta.sentiment !== "POSITIVE")) return false;
+        if (f1 === "negative" && (!v.meta || v.meta.sentiment !== "NEGATIVE")) return false;
+        if (query) {
+          const hay = [v.name, v.cuisine, v.address, v.borough, v.meta && v.meta.summary || "", v.meta && v.meta.feed || ""].join(" ").toLowerCase();
+          if (hay.indexOf(query) === -1) return false;
+        }
+        return true;
+      });
+
+      scIndex = new Supercluster(SC_OPTS);
+      scIndex.load(toFeatures(allVenues));
+      renderMarkers();
+      mapLoading.classList.remove("active");
+    }); });
+  }
+
+  /* ── Initial render (Good News filter active by default) ── */
+  applyFilters();
+
+  /* ── Resize ── */
+  window.addEventListener("resize", () => { map.invalidateSize(); updateSelRing(); });
+
+  /* ── Modal handlers ── */
+  function openModal(id) { document.getElementById(id).hidden = false; }
+  function closeModal(id) { document.getElementById(id).hidden = true; }
+  document.querySelectorAll(".modal-close").forEach(btn => {
+    btn.addEventListener("click", () => closeModal(btn.dataset.modal));
+  });
+  document.querySelectorAll(".modal-overlay").forEach(el => {
+    el.addEventListener("click", e => { if (e.target === el) el.hidden = true; });
+  });
+
+  const sourcesInfoBtn = document.getElementById("sources-info-btn");
+  if (sourcesInfoBtn) sourcesInfoBtn.addEventListener("click", () => openModal("sources-modal"));
+
+  /* ── Hash-based deep linking ── */
+  function checkHash() {
+    const hash = location.hash.slice(1);
+    if (!hash) return;
+    const v = venueById[hash];
+    if (!v) return;
+    map.setView([v.lat, v.lng], 17);
+    showVenueInfo(v);
+  }
+  checkHash();
+  window.addEventListener("hashchange", checkHash);
+
+  /* ── Share button ── */
+  viEl.addEventListener("click", e => {
+    const btn = e.target.closest(".vi-share-btn");
+    if (!btn) return;
+    const vid = btn.dataset.vid;
+    const url = location.origin + location.pathname + "#" + vid;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        btn.textContent = "\u2713 Copied!";
+        setTimeout(() => { btn.textContent = "\ud83d\udccb Link"; }, 1500);
+      });
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+# App configuration for make.dash.nyc
+# Makerspaces, hobby stores, industrial/commercial workshops.
+
+app:
+  id: make
+  title: "NYC Make"
+  subtitle: "Makerspaces, Hobby Shops & Workshops"
+  description: "Interactive map of makerspaces, hobby stores, and industrial/commercial workshops across all five boroughs."
+
+  domains:
+    - make.dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 12
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    makerspace: "#34d399"   # green — makerspaces
+    hobby:      "#fbbf24"   # yellow — hobby stores
+    workshop:   "#60a5fa"   # blue — workshops
+
+  accent: "#34d399"
+
+  crossref:
+    yelp: false
+    google: false
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 168   # weekly — these don't change often
+
+  sources:
+    - workshops

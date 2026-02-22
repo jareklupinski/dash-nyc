@@ -1,0 +1,43 @@
+# App configuration for art.dash.nyc
+# Art galleries, museums, temporary installations, notable graffiti.
+
+app:
+  id: art
+  title: "NYC Art"
+  subtitle: "Galleries, Museums & Street Art Across NYC"
+  description: "Interactive map of art galleries, museums, temporary installations, and notable graffiti across all five boroughs."
+
+  domains:
+    - art.dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 12
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    gallery:      "#c084fc"   # purple — galleries
+    museum:       "#60a5fa"   # blue — museums
+    installation: "#fbbf24"   # yellow — temporary installations
+    graffiti:     "#f87171"   # red — notable graffiti
+
+  accent: "#c084fc"
+
+  crossref:
+    yelp: false
+    google: false
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 24
+
+  sources:
+    - cultural

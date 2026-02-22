@@ -1,0 +1,43 @@
+# App configuration for relax.dash.nyc
+# Parks, spas, meditation spots, quiet places.
+
+app:
+  id: relax
+  title: "NYC Relax"
+  subtitle: "Parks, Spas & Quiet Spots Across NYC"
+  description: "Interactive map of parks, spas, meditation spots, and quiet places across all five boroughs."
+
+  domains:
+    - relax.dash.nyc
+
+  github: jareklupinski/dash-nyc
+
+  map:
+    center: [40.7128, -74.006]
+    zoom: 12
+    max_zoom: 19
+    tiles: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+
+  colors:
+    park:       "#34d399"   # green — parks
+    spa:        "#c084fc"   # purple — spas
+    meditation: "#60a5fa"   # blue — meditation / yoga
+    quiet:      "#fbbf24"   # yellow — quiet spots
+
+  accent: "#34d399"
+
+  crossref:
+    yelp: false
+    google: false
+    opentable: false
+
+  diet:
+    enabled: false
+
+  merge:
+    pairs: []
+
+  refresh_hours: 168   # weekly
+
+  sources:
+    - parks

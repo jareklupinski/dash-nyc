@@ -1,0 +1,26 @@
+# env / secrets
+.env
+*.bak
+
+# python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# build output
+/dist/
+
+# per-app caches (fetched json)
+.cache/
+
+# crossref database (shared, contains expensive API results)
+data/crossref.db
+
+# generated configs (from make targets)
+*.service
+nginx.conf
+
+# OS junk
+.DS_Store
+Thumbs.db
