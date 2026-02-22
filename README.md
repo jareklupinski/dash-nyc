@@ -318,5 +318,6 @@ make certbot-wildcard
 
 ## License
 
-Source code: MIT.  Data from NYC Open Data is public domain.
+Data from NYC Open Data is public domain.
 TUI CSS framework: MIT (see `vendor/TuiCss/LICENSE.md`).
+All else Unlicensed.
